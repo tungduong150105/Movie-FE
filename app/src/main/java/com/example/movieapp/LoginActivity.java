@@ -1,6 +1,7 @@
 package com.example.movieapp;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -23,6 +24,7 @@ import java.util.Map;
 
 public class LoginActivity extends AppCompatActivity {
     private EditText userEdt, passEdt;
+    SharedPreferences sharedPreferences;
 
     private void handleLogin(String user, String pass) throws JSONException {
         RequestQueue queue = Volley.newRequestQueue(LoginActivity.this);
@@ -32,14 +34,16 @@ public class LoginActivity extends AppCompatActivity {
                 response -> {
                     try {
                         JSONObject jsonObject = new JSONObject(response);
-//                        String token = jsonObject.getString("token");
+                        String token = jsonObject.getString("token");
+
+                        SharedPreferences.Editor editor = sharedPreferences.edit();
+                        editor.putString("token", token);
+                        editor.apply();
+
+                        startActivity(new Intent(LoginActivity.this, MainActivity.class));
                     } catch (JSONException e) {
                         throw new RuntimeException(e);
                     }
-
-                    Toast.makeText(LoginActivity.this, "Login Success", Toast.LENGTH_SHORT).show();
-                    Intent intent = new Intent(LoginActivity.this, MainActivity.class);
-                    startActivity(intent);
                 },
                 error -> Toast.makeText(LoginActivity.this, "Wrong username or password!", Toast.LENGTH_SHORT).show()) {
 
@@ -59,6 +63,9 @@ public class LoginActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
+
+        sharedPreferences = getSharedPreferences("user", MODE_PRIVATE);
+
         initView();
     }
 
